@@ -6,6 +6,7 @@ import Compiller.Lexic.Token;
 
 public class Parser {
     
+    StringBuilder code = new StringBuilder();
     private List<Token> tokens;
     private Token currentToken;
     private List<Token> tokenErrorList;
@@ -18,7 +19,8 @@ public class Parser {
     }
 
     public void translate(String newCode) {
-        System.out.print(" "+ newCode + " ");
+        code.append(" "+ newCode + " ");
+        //System.out.print(" "+ newCode + " ");
     }
 
     public Token getNextToken() {
@@ -100,17 +102,17 @@ public class Parser {
     }
 
     public boolean IFELSE() {
-        if (matchLexeme("se", "if ")) {
+        if (matchLexeme("se", "    if ")) {
             if (matchLexeme("(", "(")) {
                 if (COND()) {
                     if (matchLexeme(")", ")")) {
-                        if (matchLexeme("{", "{")) {
+                        if (matchLexeme("{", "{\n")) {
                             if (BLOCO()) {
-                                if (matchLexeme("}", "}")) {
-                                    if (matchLexeme("cnao", "else ")) {
-                                        if (matchLexeme("{", "{")) {
+                                if (matchLexeme("}", "}\n")) {
+                                    if (matchLexeme("cnao", "    else")) {
+                                        if (matchLexeme("{", "{\n")) {
                                             if (BLOCO()) {
-                                                if (matchLexeme("}", "}")) {
+                                                if (matchLexeme("}", "\n      }")) {
                                                     return true;
                                                 }
                                                 error("}", currentToken);
@@ -489,8 +491,10 @@ public class Parser {
     }
 
     public boolean ATR() {
+        translate("          ");
         if (matchType("ID", currentToken.getLexeme())) {
             if(X()) {
+                translate(";");
                 return true;
             }
             error("=", currentToken);
@@ -612,11 +616,11 @@ public class Parser {
 
     public boolean NUM() {
         if (matchType("INT", currentToken.getLexeme())) {
-            translate(";");
+            //translate(";");
             return true;
         }
         else if (matchType("FLOAT", currentToken.getLexeme())) {
-            translate(";");
+            //translate(";");
             return true;
         }
         return false;
@@ -659,9 +663,14 @@ public class Parser {
 
     public void analyze() {
         currentToken = getNextToken();
+        translate("public class Code { \n");
+        translate("public static void main (String[] args) { \n");
         if(BLOCO()) {
             if (currentToken.getType().equals("EOF") && tokenErrorList.size() == 0) {
-                System.out.println("Syntax is correct!");
+                translate("\n  } ");
+                translate("\n} ");
+                System.out.println("\nSyntax is correct!");
+                System.out.println(code.toString());
             } 
             else {
                 error("EOF", currentToken);
